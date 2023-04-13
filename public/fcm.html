@@ -44,12 +44,10 @@ limitations under the License.
       <!-- Container for the Table of content -->
       <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
         <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-          <div><a target="_blank" href="/helloWorld">helloWorld test</a></div>
-          <div><a target="_blank" href="/sendMessages">Try  sendMessages (please copy token for preparing)</a></div>
           <!-- div to display the generated registration token -->
           <div id="token_div" style="display: none;">
             <h4>Registration Token</h4>
-            <p id="token" style="word-break: break-all;"></p>
+            <p class="token" style="word-break: break-all;"></p>
             <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
                     onclick="deleteToken()">Delete Token</button>
           </div>
@@ -58,10 +56,14 @@ limitations under the License.
                granted permission to notify. -->
           <div id="permission_div" style="display: none;">
             <h4>Needs Permission</h4>
-            <p id="token"></p>
+            <p class="token"></p>
             <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
                     onclick="requestPermission()">Request Permission</button>
           </div>
+          <div><a target="_blank" href="/helloWorld">helloWorld test</a></div>
+          <br>
+          <div style="color:red">Copy this url and open it after this tab close: </div>
+          <div style="color:red">https://ibuki-firebase-push-notifier.web.app/sendMessages?deviceToken=<span class="token"></span></div>
           <!-- div to display messages received by this app. -->
           <div id="messages"></div>
         </div>
@@ -122,8 +124,8 @@ limitations under the License.
 
   function showToken(currentToken) {
     // Show token in console and UI.
-    const tokenElement = document.querySelector('#token');
-    tokenElement.textContent = currentToken;
+    const tokenElements = document.querySelectorAll('.token');
+    tokenElements.forEach((el) => el.textContent = currentToken);
   }
 
   // Send the registration token your application server, so that it can:
