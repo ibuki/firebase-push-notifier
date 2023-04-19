@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import * as express from "express";
-import * as basicAuth from "express-basic-auth";
+import {RequestHandler} from "express";
 import {sendMulticast} from "./utils";
 
 // // Start writing functions
@@ -36,10 +36,15 @@ export const storeData = functions.https.onRequest(
   });
 const expressApp = express();
 
-expressApp.use(basicAuth({
-  users: {"admin": "supersecret"},
-  challenge: true,
-}));
+const firebaseAuthMiddleware: RequestHandler = async (req, res, next) => {
+  admin.apps.length || admin.initializeApp();
+  const idToken = req.headers.authorization?.split(" ")[1] || "";
+  const decodedToken = await admin.auth().verifyIdToken(idToken).catch((error) => console.error(error) );
+  if (!decodedToken) return res.status(401).json({msg: "unauthorized"});
+  return next();
+};
+
+expressApp.use(firebaseAuthMiddleware);
 expressApp.all("/*", (req, res) => res.send("It works!\n" + req.path));
 
 export const app = functions.https.onRequest(expressApp);

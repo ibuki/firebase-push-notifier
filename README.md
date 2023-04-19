@@ -16,6 +16,7 @@ firebase serve
 firebase deploy
 ```
 
-# セットアップ時のメモ
+# Reference
 
-[docs/SETUP.md](docs/SETUP.md)
+[セットアップ方法 (docs/SETUP.md)](docs/SETUP.md)
+[認証 (docs/AUTH.md)](docs/AUTH.md)
