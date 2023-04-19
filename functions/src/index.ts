@@ -1,5 +1,7 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import * as express from "express";
+import * as basicAuth from "express-basic-auth";
 import {sendMulticast} from "./utils";
 
 // // Start writing functions
@@ -32,3 +34,12 @@ export const storeData = functions.https.onRequest(
       .orderBy("createdAt", "desc").get()
       .then((snapshot) => snapshot.docs[0].data()));
   });
+const expressApp = express();
+
+expressApp.use(basicAuth({
+  users: {"admin": "supersecret"},
+  challenge: true,
+}));
+expressApp.all("/*", (req, res) => res.send("It works!\n" + req.path));
+
+export const app = functions.https.onRequest(expressApp);

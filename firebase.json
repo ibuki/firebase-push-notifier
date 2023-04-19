@@ -36,6 +36,10 @@
         "function": "sendMessages"
       },
       {
+        "source": "/app/**",
+        "function": "app"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
