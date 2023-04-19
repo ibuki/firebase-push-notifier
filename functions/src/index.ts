@@ -1,3 +1,4 @@
+import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import {sendMulticast} from "./utils";
 
@@ -19,3 +20,15 @@ export const sendMessages = functions.https.onRequest((request, response) => {
     response.send("Please add query ?deviceToken=xxx");
   }
 });
+
+export const storeData = functions.https.onRequest(
+  async (request, response) => {
+    admin.apps.length || admin.initializeApp();
+    console.log(admin.firestore().collection("restaurants"));
+    const doc = await admin.firestore().collection("restaurants").
+      add({body: request.body, createdAt: new Date(), query: request.query});
+    doc.collection("ratings").add({rate: 123});
+    response.send(await admin.firestore().collection("restaurants")
+      .orderBy("createdAt", "desc").get()
+      .then((snapshot) => snapshot.docs[0].data()));
+  });
