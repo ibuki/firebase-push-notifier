@@ -45,6 +45,6 @@ const firebaseAuthMiddleware: RequestHandler = async (req, res, next) => {
 };
 
 expressApp.use(firebaseAuthMiddleware);
-expressApp.all("/*", (req, res) => res.send("It works!\n" + req.path));
+expressApp.use(appRouter);
 
 export const app = functions.https.onRequest(expressApp);
