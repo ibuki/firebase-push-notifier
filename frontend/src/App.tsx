@@ -1,33 +1,109 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className="App">
+    <div>
+      <h1>Firebase Push Notifier</h1>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        Email: <input type="email" />
+        Password: <input type="password" />
+        <button type="button">Log in</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div>
+        Logged in as User
+        <button type="button">Log out</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
+      <div style={{marginTop: 50}}>
+        <h3>Create device token group</h3>
+        <div>
+          name: <input type="text" />
+          <button type="button">Create</button>
+        </div>
+      </div>
+
+      <div style={{marginTop: 50}}>
+        <h3>Device token groups</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Device token count</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>name1</td>
+              <td>1</td>
+              <td>
+                <button>Add device token</button>
+                <button>Destroy</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>name2</td>
+              <td>2</td>
+              <td>
+                <button>Add device token</button>
+                <button>Destroy</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{marginTop: 50}}>
+        <h3>Create push notification</h3>
+        <div>
+          Name: <input type="text" />
+          Content: <input type="text" />
+          DeviceTokenId: <select><option value={1}>name1</option></select>
+          <button type="button">Create</button>
+        </div>
+      </div>
+
+      <div style={{marginTop: 50}}>
+        <h3>Push notifications</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Content</th>
+              <th>Device token name</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>name1</td>
+              <td>content1</td>
+              <td>deviceTokenName1 (deviceTokenId: 1)</td>
+              <td>before_publish</td>
+              <td>
+                <button>Publish</button>
+                <button>Destroy</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>name2</td>
+              <td>content2</td>
+              <td>deviceTokenName2 (deviceTokenId: 2)</td>
+              <td>published</td>
+              <td>
+                <button>Detail</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
