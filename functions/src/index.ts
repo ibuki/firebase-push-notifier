@@ -1,8 +1,9 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import * as express from "express";
-import {RequestHandler} from "express";
+import appRouter from "./routes";
 import {sendMulticast} from "./utils";
+import {firebaseAuthMiddleware} from "./middleware/authMiddleware";
 
 // // Start writing functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -35,14 +36,6 @@ export const storeData = functions.https.onRequest(
       .then((snapshot) => snapshot.docs[0].data()));
   });
 const expressApp = express();
-
-const firebaseAuthMiddleware: RequestHandler = async (req, res, next) => {
-  admin.apps.length || admin.initializeApp();
-  const idToken = req.headers.authorization?.split(" ")[1] || "";
-  const decodedToken = await admin.auth().verifyIdToken(idToken).catch((error) => console.error(error) );
-  if (!decodedToken) return res.status(401).json({msg: "unauthorized"});
-  return next();
-};
 
 expressApp.use(firebaseAuthMiddleware);
 expressApp.use(appRouter);
