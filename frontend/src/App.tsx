@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import {signIn, signOut, useAuthState} from './lib/firebase'
-import { createDeviceTokenGroup, fetchDeviceTokenGroups } from './firestore/deviceTokenGroups';
+import { addDeviceToken, createDeviceTokenGroup, deleteDeviceTokenGroup, fetchDeviceTokenCount, fetchDeviceTokenGroups } from './firestore/deviceTokenGroups';
+import { DocumentData } from 'firebase/firestore';
+import { createPushNotification, deletePushNotification, fetchPushNotifications } from './firestore/pushNotifications';
 
 function App() {
   const [user, loading, error] = useAuthState();
   const [signInForm, setSignInForm] = useState({email: 'ibuki.nakamura@gmail.com', password: 'testtest'});
-  const [name, setName] = useState('');
+  const [createForm, setCreateForm] = useState({name: ''});
+  const [deviceTokenGroups, setDeviceTokenGroups] = useState<DocumentData>([]);
 
   const onSignInClicked = async () => {
       const response = await signIn(signInForm.email, signInForm.password)
@@ -17,10 +20,44 @@ function App() {
       console.log(response)
   }
 
-  const onCreateDeviceTokenGroup = async () => {
-    await createDeviceTokenGroup(name)
-    console.log(await fetchDeviceTokenGroups())
+  const onCreateDeviceTokenGroupClicked = async () => {
+    await createDeviceTokenGroup(createForm.name)
+    await reloadDeviceTokenGroups();
   }
+
+  const onDeleteDeviceTokenGroupClicked = async (id: string) => {
+    if(!confirm('Delete?')) return
+    await deleteDeviceTokenGroup(id)
+    await reloadDeviceTokenGroups();
+  }
+
+  const reloadDeviceTokenGroups = async () => {
+    const response = await fetchDeviceTokenGroups();
+    setDeviceTokenGroups(response);
+  }
+
+  const showDeviceTokenCount = async (id:string) =>  alert(await fetchDeviceTokenCount(id))
+
+  const [createPushNotificationForm, setCreatePushNotificationForm] = useState({name: '', content: '', deviceTokenGroupId: ''});
+  const [pushNotifications, setPushNotifications] = useState<DocumentData>([]);
+
+  const onCreatePushNotificationClicked = async () => {
+    await createPushNotification(createPushNotificationForm)
+    await reloadPushNotifications();
+  }
+
+  const onDeletePushNotificationClicked = async (id: string) => {
+    if(!confirm('Delete?')) return
+    await deletePushNotification(id)
+    await reloadPushNotifications();
+  }
+
+  const reloadPushNotifications = async () => {
+    const response = await fetchPushNotifications();
+    setPushNotifications(response);
+  }
+
+  useEffect(() => {reloadDeviceTokenGroups(); reloadPushNotifications()}, [])
 
   return (
     <div>
@@ -43,8 +80,8 @@ function App() {
           <div style={{marginTop: 50}}>
             <h3>Create device token group</h3>
             <div>
-              name: <input type="text" value={name} onChange={event => setName(event.target.value)}/>
-              <button type="button" onClick={onCreateDeviceTokenGroup}>Create</button>
+              name: <input type="text" value={createForm.name} onChange={event => setCreateForm({...createForm, name: event.target.value})}/>
+              <button type="button" onClick={onCreateDeviceTokenGroupClicked}>Create</button>
             </div>
           </div>
 
@@ -55,29 +92,23 @@ function App() {
                 <tr>
                   <th>ID</th>
                   <th>Name</th>
-                  <th>Device token count</th>
+                  <th>Created at</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>name1</td>
-                  <td>1</td>
-                  <td>
-                    <button>Add device token</button>
-                    <button>Destroy</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>name2</td>
-                  <td>2</td>
-                  <td>
-                    <button>Add device token</button>
-                    <button>Destroy</button>
-                  </td>
-                </tr>
+                {deviceTokenGroups.map((deviceTokenGroup, index) => (
+                  <tr key={deviceTokenGroup.id}>
+                    <td>{deviceTokenGroup.id}</td>
+                    <td>{deviceTokenGroup.name}</td>
+                    <td>{deviceTokenGroup.createdAt && new Date(deviceTokenGroup.createdAt.seconds * 1000).toISOString()}</td>
+                    <td>
+                      <button onClick={() => addDeviceToken(deviceTokenGroup.id, new Date().toISOString())}>Add device token</button>
+                      <button onClick={() => showDeviceTokenCount(deviceTokenGroup.id)}>Show device token count</button>
+                      <button onClick={() => onDeleteDeviceTokenGroupClicked(deviceTokenGroup.id)}>Delete</button>
+                    </td>
+                  </tr>
+                )) }
               </tbody>
             </table>
           </div>
@@ -85,10 +116,15 @@ function App() {
           <div style={{marginTop: 50}}>
             <h3>Create push notification</h3>
             <div>
-              Name: <input type="text" />
-              Content: <input type="text" />
-              DeviceTokenId: <select><option value={1}>name1</option></select>
-              <button type="button">Create</button>
+              Name: <input type="text" value={createPushNotificationForm.name} onChange={event => setCreatePushNotificationForm({...createPushNotificationForm, name: event.target.value})}/>
+              Content: <input type="text" value={createPushNotificationForm.content} onChange={event => setCreatePushNotificationForm({...createPushNotificationForm, content: event.target.value})}/>
+              DeviceTokenId: <select value={createPushNotificationForm.deviceTokenGroupId} onChange={event => setCreatePushNotificationForm({...createPushNotificationForm, deviceTokenGroupId: event.target.value})} >
+                <option>Please select</option>
+              {deviceTokenGroups.map((deviceTokenGroup) => (
+                <option value={deviceTokenGroup.id} key={deviceTokenGroup.id}>{deviceTokenGroup.name}</option>
+                )) }
+              </select>
+              <button type="button" onClick={onCreatePushNotificationClicked}>Create</button>
             </div>
           </div>
 
@@ -102,31 +138,26 @@ function App() {
                   <th>Content</th>
                   <th>Device token name</th>
                   <th>Status</th>
+                  <th>Created at</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>name1</td>
-                  <td>content1</td>
-                  <td>deviceTokenName1 (deviceTokenId: 1)</td>
-                  <td>before_publish</td>
-                  <td>
-                    <button>Publish</button>
-                    <button>Destroy</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>name2</td>
-                  <td>content2</td>
-                  <td>deviceTokenName2 (deviceTokenId: 2)</td>
-                  <td>published</td>
-                  <td>
-                    <button>Detail</button>
-                  </td>
-                </tr>
+                {pushNotifications.map((pushNotification, index) => (
+                  <tr key={pushNotification.id}>
+                    <td>{pushNotification.id}</td>
+                    <td>{pushNotification.name}</td>
+                    <td>{pushNotification.content}</td>
+                    <td>{pushNotification.deviceTokenGroupId}</td>
+                    <td>{pushNotification.status}</td>
+                    <td>{pushNotification.createdAt && new Date(pushNotification.createdAt.seconds * 1000).toISOString()}</td>
+                    <td>
+                      <button>Publish</button>
+                      <button onClick={() => showDeviceTokenCount(pushNotification.deviceTokenGroupId)}>Show count</button>
+                      <button onClick={() => onDeletePushNotificationClicked(pushNotification.id)}>Delete</button>
+                    </td>
+                  </tr>
+                )) }
               </tbody>
             </table>
           </div>
