@@ -8,3 +8,7 @@ export const indexDeviceTokenGroups: RequestHandler = async (req, res) => {
   const records = snapshot.docs.map((doc) => doc.data());
   return res.json({records});
 };
+
+export const publishDeviceTokenGroup: RequestHandler = async (req, res) => {
+  return res.json({message: req.params.deviceTokenGroupId});
+};
