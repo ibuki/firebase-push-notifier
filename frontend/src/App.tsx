@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import {signIn, signOut, useAuthState} from './lib/firebase'
+import { getAppToken, signIn, signOut, useAuthState} from './lib/firebase'
 import { addDeviceToken, createDeviceTokenGroup, deleteDeviceTokenGroup, fetchDeviceTokenCount, fetchDeviceTokenGroups } from './firestore/deviceTokenGroups';
 import { DocumentData } from 'firebase/firestore';
 import { createPushNotification, deletePushNotification, fetchPushNotifications } from './firestore/pushNotifications';
@@ -9,15 +9,21 @@ function App() {
   const [signInForm, setSignInForm] = useState({email: 'ibuki.nakamura@gmail.com', password: 'testtest'});
   const [createForm, setCreateForm] = useState({name: ''});
   const [deviceTokenGroups, setDeviceTokenGroups] = useState<DocumentData>([]);
+  const [deviceToken, setDeviceToken] = useState('');
 
   const onSignInClicked = async () => {
-      const response = await signIn(signInForm.email, signInForm.password)
-      console.log(response)
-      console.log(response.user)
+    const response = await signIn(signInForm.email, signInForm.password)
+    console.log(response)
+    console.log(response.user)
   }
   const onSignOutClicked = async () => {
-      const response = await signOut()
-      console.log(response)
+    const response = await signOut()
+    console.log(response)
+  }
+
+  const onGenerateDeviceTokenClicked = async () => {
+    const response = await getAppToken()
+    setDeviceToken(response)
   }
 
   const onCreateDeviceTokenGroupClicked = async () => {
@@ -78,6 +84,14 @@ function App() {
           </div>
 
           <div style={{marginTop: 50}}>
+            <h3>Generate device token for testing with this browser</h3>
+            <div>
+              Device token: <input type="text" value={deviceToken} onChange={event => setDeviceToken(event.target.value)}/>
+              <button type="button" onClick={onGenerateDeviceTokenClicked}>Generate</button>
+            </div>
+          </div>
+
+          <div style={{marginTop: 50}}>
             <h3>Create device token group</h3>
             <div>
               name: <input type="text" value={createForm.name} onChange={event => setCreateForm({...createForm, name: event.target.value})}/>
@@ -97,13 +111,13 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {deviceTokenGroups.map((deviceTokenGroup, index) => (
+                {deviceTokenGroups.map((deviceTokenGroup: any) => (
                   <tr key={deviceTokenGroup.id}>
                     <td>{deviceTokenGroup.id}</td>
                     <td>{deviceTokenGroup.name}</td>
                     <td>{deviceTokenGroup.createdAt && new Date(deviceTokenGroup.createdAt.seconds * 1000).toISOString()}</td>
                     <td>
-                      <button onClick={() => addDeviceToken(deviceTokenGroup.id, new Date().toISOString())}>Add device token</button>
+                      <button onClick={() => deviceToken ? addDeviceToken(deviceTokenGroup.id, deviceToken) : alert('Device token is empty')}>Add device token</button>
                       <button onClick={() => showDeviceTokenCount(deviceTokenGroup.id)}>Show device token count</button>
                       <button onClick={() => onDeleteDeviceTokenGroupClicked(deviceTokenGroup.id)}>Delete</button>
                     </td>
@@ -120,7 +134,7 @@ function App() {
               Content: <input type="text" value={createPushNotificationForm.content} onChange={event => setCreatePushNotificationForm({...createPushNotificationForm, content: event.target.value})}/>
               DeviceTokenId: <select value={createPushNotificationForm.deviceTokenGroupId} onChange={event => setCreatePushNotificationForm({...createPushNotificationForm, deviceTokenGroupId: event.target.value})} >
                 <option>Please select</option>
-              {deviceTokenGroups.map((deviceTokenGroup) => (
+              {deviceTokenGroups.map((deviceTokenGroup: any) => (
                 <option value={deviceTokenGroup.id} key={deviceTokenGroup.id}>{deviceTokenGroup.name}</option>
                 )) }
               </select>
@@ -143,7 +157,7 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {pushNotifications.map((pushNotification, index) => (
+                {pushNotifications.map((pushNotification:any ) => (
                   <tr key={pushNotification.id}>
                     <td>{pushNotification.id}</td>
                     <td>{pushNotification.name}</td>
