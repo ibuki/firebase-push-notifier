@@ -69,7 +69,7 @@ function App() {
   }
 
 
-  useEffect(() => {reloadDeviceTokenGroups(); reloadPushNotifications()}, [])
+  useEffect(() => {reloadDeviceTokenGroups(); reloadPushNotifications()}, [user])
 
   return (
     <div>
@@ -110,7 +110,6 @@ function App() {
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Name</th>
                   <th>Created at</th>
                   <th>Actions</th>
@@ -119,7 +118,6 @@ function App() {
               <tbody>
                 {deviceTokenGroups.map((deviceTokenGroup: any) => (
                   <tr key={deviceTokenGroup.id}>
-                    <td>{deviceTokenGroup.id}</td>
                     <td>{deviceTokenGroup.name}</td>
                     <td>{deviceTokenGroup.createdAt && new Date(deviceTokenGroup.createdAt.seconds * 1000).toISOString()}</td>
                     <td>
@@ -153,7 +151,6 @@ function App() {
             <table>
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>Name</th>
                   <th>Content</th>
                   <th>Device token name</th>
@@ -165,7 +162,6 @@ function App() {
               <tbody>
                 {pushNotifications.map((pushNotification:any ) => (
                   <tr key={pushNotification.id}>
-                    <td>{pushNotification.id}</td>
                     <td>{pushNotification.name}</td>
                     <td>{pushNotification.content}</td>
                     <td>{pushNotification.deviceTokenGroupId}</td>
