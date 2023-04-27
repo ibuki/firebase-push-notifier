@@ -3,6 +3,7 @@ import { getAppToken, signIn, signOut, useAuthState} from './lib/firebase'
 import { addDeviceToken, createDeviceTokenGroup, deleteDeviceTokenGroup, fetchDeviceTokenCount, fetchDeviceTokenGroups } from './firestore/deviceTokenGroups';
 import { DocumentData } from 'firebase/firestore';
 import { createPushNotification, deletePushNotification, fetchPushNotifications } from './firestore/pushNotifications';
+import { publishPushNotification} from './api';
 
 function App() {
   const [user, loading, error] = useAuthState();
@@ -62,6 +63,11 @@ function App() {
     const response = await fetchPushNotifications();
     setPushNotifications(response);
   }
+
+  const onPublishClicked = async (id: string) => {
+    await publishPushNotification(id)
+  }
+
 
   useEffect(() => {reloadDeviceTokenGroups(); reloadPushNotifications()}, [])
 
@@ -166,7 +172,7 @@ function App() {
                     <td>{pushNotification.status}</td>
                     <td>{pushNotification.createdAt && new Date(pushNotification.createdAt.seconds * 1000).toISOString()}</td>
                     <td>
-                      <button>Publish</button>
+                      <button onClick={() => onPublishClicked(pushNotification.id)}>Publish</button>
                       <button onClick={() => showDeviceTokenCount(pushNotification.deviceTokenGroupId)}>Show count</button>
                       <button onClick={() => onDeletePushNotificationClicked(pushNotification.id)}>Delete</button>
                     </td>
